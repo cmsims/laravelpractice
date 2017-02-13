@@ -27,7 +27,7 @@ class TodoListVersion2 extends Migration
             $table->string('name')->default('');
             $table->string('slug')->default('');
             $table->boolean('completed')->default(false);
-            $table->text('description')->default('');
+            $table->text('description');
             $table->timestamps();
         });
     }

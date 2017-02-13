@@ -1,119 +1,112 @@
-<?php
-
-
-namespace App\Http\Controllers;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+<?php namespace App\Http\Controllers;
+use App\Project;
 use App\Todo;
-use Illuminate\Support\Facades\View;
-use Illuminate\Validation\Validator;
+use App\Http\Requests;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
-
-
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Redirect;
 
 class TodoController extends Controller
 {
+
+    protected $rules = [
+        'name' => ['required', 'min:3'],
+        'slug' => ['required'],
+        'description' => ['required'],
+    ];
+
+
     /**
-     * Display a listing of the resource.
-     *
-     */
-    public function index()
+ * Display a listing of the resource.
+ *
+ * @param  \App\Project $project
+ * @return Response
+ */
+    public function index(Project $project)
     {
-        $todos=Todo::all();
-        return view('pages.todos.index', compact('todos'));
+        return view('pages.todos.index', compact('project'));
     }
 
     /**
      * Show the form for creating a new resource.
      *
+     * @param  \App\Project $project
+     * @return Response
      */
-    public function create()
+    public function create(Project $project)
     {
-        //
+        return view('pages.todos.create', compact('project'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
+     * @param  \App\Project $project
+     * @return Response
      */
-    public function store()
+    public function store(Project $project, Request $request)
     {
-        //
+        $this->validate($request, $this->rules);
+
+        $input = Input::all();
+        $input['project_id'] = $project->id;
+        Todo::create( $input );
+
+        return Redirect::route('pages.projects.show', $project->slug)->with('Todo created.');
     }
 
     /**
      * Display the specified resource.
-     * @param Todo $todo
+     *
+     * @param  \App\Project $project
+     * @return Response
      */
-    public function show(Todo $todo)
+    public function show(Project $projects, Todo $todos)
     {
-        //
+        return view('pages.todos.show', compact('projects', 'todos'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Todo $todo
+     * @param  \App\Project $project
+
+     * @return Response
      */
-    public function edit(Todo $todo)
+    public function edit(Project $project, Todo $todo)
     {
-        //
+        return view('pages.todos.edit', compact('project', 'todo'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param Todo $todo
+     * @param  \App\Project $project
+     * @return Response
      */
-    public function update(Todo $todo)
+    public function update(Project $project, Todo $todo, Request $request)
     {
-        //
+        $this->validate($request, $this->rules);
+
+        $input = array_except(Input::all(), '_method');
+        $todo->update($input);
+
+        return Redirect::route('projects.todos.show', [$project->slug, $todo->slug])->with('message', 'Todo updated.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param Todo $todo
+     * @param  \App\Project $project
+     * @param  \App\Todo    $todo
+     * @return Response
      */
-    public function destroy(Todo $todo)
+    public function destroy(Project $project, Todo $todo)
     {
-        //
+        $todo->delete();
+        return Redirect::route('projects.show', $project->slug)->with('message', 'Todo deleted.');
     }
 
-
-//    public function index(){
-//        $todos=Todo::orderBy('created_at', 'asc')->get();
-//        $data = [ 'todos' => $todos ];
-//        return view('pages.todos', $data);
-//    }
-//
-//    public function create(Request $request)
-//    {
-//        $validator=Validator::make($request->all(),[
-//            'name'=>'required|max:255',
-//        ]);
-//
-//        if ($validator->fails()){
-//            return redirect('/')->withInput()->withErrors($validator);
-//        }
-//
-//        $todo=new Todo;
-//        $todo->name=$request->name;
-//        $todo->save();
-//
-//
-//        return redirect('/');
-//    }
-//
-//    public function delete(Todo $todo)
-//    {
-//        $todo->delete();
-//        return redirect('/');
-//    }
 }
-
-//Route::delete('/todo/{todo}', function (){
-//
-//})

@@ -2,7 +2,7 @@
 
 
 use App\Todo;
-
+use Illuminate\Support\Str;
 use App\Http\Controllers\TodoController;
 /*
 |--------------------------------------------------------------------------
@@ -15,21 +15,19 @@ use App\Http\Controllers\TodoController;
 |
 */
 
-Route::get('/', 'TodoController@index');
+Route::get('/', 'ProjectController@index');
 
-Route::resource('todo', 'TodoController');
-
+// Provide controller methods with object instead of ID
 Route::model('todos', 'Todo');
-
 Route::model('projects', 'Project');
 
-//Route::get('/', 'TodoController@postTodos');
-//
-//Route::get('about', function () {
-//    return View::make('pages.about');
-//});
-//
-//Route::get('projects', function () {
-//    return View::make('pages.projects');
-//});
+// Use slugs rather than IDs in URLs
+Route::bind('todo', function($value, $route) {
+    return App\Todo::whereSlug($value)->first();
+});
+Route::bind('project', function($value, $route) {
+    return App\Project::whereSlug($value)->first();
+});
 
+Route::resource('projects', 'ProjectController');
+Route::resource('projects.todos', 'TodoController');
